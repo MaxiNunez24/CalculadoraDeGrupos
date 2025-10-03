@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Grupos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .resultado {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #e8f5e8;
+            border-radius: 5px;
+            border-left: 4px solid #28a745;
+            display: none;
+        }
+        .resultado h3 {
+            margin-top: 0;
+            color: #155724;
+        }
+        .resultado p {
+            margin: 5px 0;
+            color: #155724;
+        }
+        .sobrantes {
+            color: #856404;
+            font-style: italic;
+        }
+        .grupos-visual {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        .grupo-cuadrado {
+            width: 80px;
+            height: 80px;
+            background-color: #007bff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 24px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .grupo-cuadrado.sobrante {
+            background-color: #ffc107;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧮 Calculadora de Grupos</h1>
+        
+        <div class="input-group">
+            <label for="cantPersonas">Cantidad total de personas:</label>
+            <input type="number" id="cantPersonas" min="1" required>
+        </div>
+
+        <div class="input-group">
+            <label for="tipoCalculo">Tipo de cálculo:</label>
+            <select id="tipoCalculo" onchange="cambiarTipo()">
+                <option value="grupos">Especificar cantidad de grupos</option>
+                <option value="integrantes">Especificar integrantes por grupo</option>
+            </select>
+        </div>
+
+        <div class="input-group" id="inputGrupos">
+            <label for="cantGrupos">Cantidad de grupos deseados:</label>
+            <input type="number" id="cantGrupos" min="1">
+        </div>
+
+        <div class="input-group" id="inputIntegrantes" style="display: none;">
+            <label for="cantIntegrantes">Integrantes por grupo:</label>
+            <input type="number" id="cantIntegrantes" min="1">
+        </div>
+
+        <button onclick="calcular()">Calcular Grupos</button>
+
+        <div id="resultado" class="resultado">
+            <h3>📊 Resultado:</h3>
+            <div id="contenidoResultado"></div>
+            <div id="gruposVisuales" class="grupos-visual"></div>
+        </div>
+    </div>
+
+    <script>
+        function cambiarTipo() {
+            const tipo = document.getElementById('tipoCalculo').value;
+            const inputGrupos = document.getElementById('inputGrupos');
+            const inputIntegrantes = document.getElementById('inputIntegrantes');
+            
+            if (tipo === 'grupos') {
+                inputGrupos.style.display = 'block';
+                inputIntegrantes.style.display = 'none';
+            } else {
+                inputGrupos.style.display = 'none';
+                inputIntegrantes.style.display = 'block';
+            }
+        }
+
+        function calcular() {
+            const cantPersonas = parseInt(document.getElementById('cantPersonas').value);
+            const tipo = document.getElementById('tipoCalculo').value;
+            
+            if (!cantPersonas || cantPersonas < 1) {
+                alert('Por favor ingresa una cantidad válida de personas');
+                return;
+            }
+
+            let resultado = '';
+            let gruposVisuales = '';
+            
+            if (tipo === 'grupos') {
+                const cantGrupos = parseInt(document.getElementById('cantGrupos').value);
+                if (!cantGrupos || cantGrupos < 1) {
+                    alert('Por favor ingresa una cantidad válida de grupos');
+                    return;
+                }
+                
+                const integrantesPorGrupo = Math.floor(cantPersonas / cantGrupos);
+                const sobrantes = cantPersonas % cantGrupos;
+                
+                resultado = `
+                    <p><strong>Total de personas:</strong> ${cantPersonas}</p>
+                    <p><strong>Cantidad de grupos:</strong> ${cantGrupos}</p>
+                    <p><strong>Integrantes por grupo:</strong> ${integrantesPorGrupo}</p>
+                `;
+                
+                // Crear cuadrados para grupos normales
+                for (let i = 0; i < cantGrupos; i++) {
+                    const integrantes = i < sobrantes ? integrantesPorGrupo + 1 : integrantesPorGrupo;
+                    const clase = i < sobrantes ? 'grupo-cuadrado sobrante' : 'grupo-cuadrado';
+                    gruposVisuales += `<div class="${clase}">${integrantes}</div>`;
+                }
+                
+                if (sobrantes > 0) {
+                    resultado += `<p class="sobrantes">⚠️ Personas sobrantes: ${sobrantes}</p>`;
+                    resultado += `<p class="sobrantes">💡 Se distribuyeron en ${sobrantes} grupos (cuadrados amarillos)</p>`;
+                }
+                
+            } else {
+                const cantIntegrantes = parseInt(document.getElementById('cantIntegrantes').value);
+                if (!cantIntegrantes || cantIntegrantes < 1) {
+                    alert('Por favor ingresa una cantidad válida de integrantes por grupo');
+                    return;
+                }
+                
+                const gruposCompletos = Math.floor(cantPersonas / cantIntegrantes);
+                const sobrantes = cantPersonas % cantIntegrantes;
+                
+                resultado = `
+                    <p><strong>Total de personas:</strong> ${cantPersonas}</p>
+                    <p><strong>Integrantes por grupo:</strong> ${cantIntegrantes}</p>
+                    <p><strong>Grupos completos:</strong> ${gruposCompletos}</p>
+                `;
+                
+                // Crear cuadrados para grupos completos
+                for (let i = 0; i < gruposCompletos; i++) {
+                    gruposVisuales += `<div class="grupo-cuadrado">${cantIntegrantes}</div>`;
+                }
+                
+                // Agregar grupo con sobrantes si los hay
+                if (sobrantes > 0) {
+                    gruposVisuales += `<div class="grupo-cuadrado sobrante">${sobrantes}</div>`;
+                    resultado += `<p class="sobrantes">⚠️ Personas sobrantes: ${sobrantes}</p>`;
+                    resultado += `<p class="sobrantes">💡 Grupo adicional con ${sobrantes} integrantes (cuadrado amarillo)</p>`;
+                }
+            }
+            
+            document.getElementById('contenidoResultado').innerHTML = resultado;
+            document.getElementById('gruposVisuales').innerHTML = gruposVisuales;
+            document.getElementById('resultado').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
